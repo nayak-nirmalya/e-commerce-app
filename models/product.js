@@ -18,7 +18,8 @@ const getProductFromFile = (cb) => {
 }
 
 module.exports = class Product {
-  constructor(_title, _imageURL, _price, _description) {
+  constructor(_id, _title, _imageURL, _price, _description) {
+    this.id = _id
     this.title = _title
     this.imageURL = _imageURL
     this.price = _price
@@ -26,12 +27,23 @@ module.exports = class Product {
   }
 
   save() {
-    this.id = Math.random().toString()
     getProductFromFile((products) => {
-      products.push(this)
-      fs.writeFile(savePath, JSON.stringify(products), (err) => {
-        console.log(err)
-      })
+      if (this.id) {
+        const existingProductIndex = products.findIndex(
+          (prod) => prod.id === this.id,
+        )
+        const updatedProducts = [...products]
+        updatedProducts[existingProductIndex] = this
+        fs.writeFile(savePath, JSON.stringify(updatedProducts), (err) => {
+          console.log(err)
+        })
+      } else {
+        this.id = Math.random().toString()
+        products.push(this)
+        fs.writeFile(savePath, JSON.stringify(products), (err) => {
+          console.log(err)
+        })
+      }
     })
   }
 
