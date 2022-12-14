@@ -51,7 +51,7 @@ exports.postEditProduct = (req, res, next) => {
       prod.description = description
       return prod.save()
     })
-    .then((ret) => {
+    .then((result) => {
       console.log('Updated Product!')
       res.redirect('/admin/products')
     })
@@ -72,6 +72,13 @@ exports.getProducts = (req, res, next) => {
 
 exports.postDeleteProduct = (req, res, next) => {
   const { productID } = req.body
-  Product.deleteByID(productID)
-  res.redirect('/admin/products')
+  Product.findByPk(productID)
+    .then((prod) => {
+      return prod.destroy()
+    })
+    .then((result) => {
+      console.log('Destroyed!')
+      res.redirect('/admin/products')
+    })
+    .catch((err) => console.error(err))
 }
