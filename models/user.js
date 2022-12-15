@@ -28,7 +28,7 @@ class User {
       updatedCartItems[cartProductIndex].quantity = newQuantity
     } else {
       updatedCartItems.push({
-        productId: new ObjectId(product._id),
+        productID: new ObjectId(product._id),
         quantity: newQuantity,
       })
     }
@@ -41,6 +41,40 @@ class User {
       .updateOne(
         { _id: new ObjectId(this._id) },
         { $set: { cart: updatedCart } },
+      )
+  }
+
+  getCart() {
+    const db = getDB()
+    const prodIDs = this.cart.items.map((temp) => {
+      return temp.productID
+    })
+    return db
+      .collection('products')
+      .find({ _id: { $in: prodIDs } })
+      .toArray()
+      .then((prods) => {
+        return prods.map((prod) => {
+          return {
+            ...prod,
+            quantity: this.cart.items.find((index) => {
+              return index.productID.toString() === prod._id.toString()
+            }).quantity,
+          }
+        })
+      })
+  }
+
+  deleteItemFromCart(prodID) {
+    const updatedCartItems = this.cart.items.filter((item) => {
+      return item.productID.toString() !== prodID.toString()
+    })
+    const db = getDB()
+    return db
+      .collection('users')
+      .updateOne(
+        { _id: new ObjectId(this._id) },
+        { $set: { cart: { items: updatedCartItems } } },
       )
   }
 
